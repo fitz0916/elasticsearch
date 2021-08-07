@@ -158,6 +158,7 @@ class Elasticsearch extends EnvironmentAwareCommand {
         }
 
         try {
+            //初始化Bootstrap
             init(daemonize, pidFile, quiet, env);
         } catch (NodeValidationException e) {
             throw new UserException(ExitCodes.CONFIG, e.getMessage());

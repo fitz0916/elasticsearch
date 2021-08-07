@@ -174,10 +174,12 @@ public class RestController implements HttpServerTransport.Dispatcher {
     }
 
     /**
+     *  启动时注册handler
      * Registers a REST handler with the controller. The REST handler declares the {@code method}
      * and {@code path} combinations.
      */
     public void registerHandler(final RestHandler restHandler) {
+        //注册handler，获取如RestBulkAction中的routes集合，并注册到
         restHandler.routes().forEach(route -> registerHandler(route.getMethod(), route.getPath(), restHandler));
         restHandler.deprecatedRoutes().forEach(route ->
             registerAsDeprecatedHandler(route.getMethod(), route.getPath(), restHandler, route.getDeprecationMessage()));
@@ -185,9 +187,12 @@ public class RestController implements HttpServerTransport.Dispatcher {
             restHandler, route.getDeprecatedMethod(), route.getDeprecatedPath()));
     }
 
+
+    //1.restful入口
     @Override
     public void dispatchRequest(RestRequest request, RestChannel channel, ThreadContext threadContext) {
         try {
+            //找出所有的handler进行请求分发
             tryAllHandlers(request, channel, threadContext);
         } catch (Exception e) {
             try {
@@ -199,6 +204,7 @@ public class RestController implements HttpServerTransport.Dispatcher {
             }
         }
     }
+
 
     @Override
     public void dispatchBadRequest(final RestChannel channel, final ThreadContext threadContext, final Throwable cause) {
@@ -315,13 +321,14 @@ public class RestController implements HttpServerTransport.Dispatcher {
                     BytesRestResponse.createSimpleErrorResponse(channel, BAD_REQUEST, "error traces in responses are disabled."));
             return;
         }
-
+        //rawPath restful 接口资源路径uri
         final String rawPath = request.rawPath();
         final String uri = request.uri();
         final RestRequest.Method requestMethod;
         try {
             // Resolves the HTTP method and fails if the method is invalid
             requestMethod = request.method();
+            //获取所有可能的handler，并尝试分发请求
             // Loop through all possible handlers, attempting to dispatch the request
             Iterator<MethodHandlers> allHandlers = getAllHandlers(request.params(), rawPath);
             while (allHandlers.hasNext()) {

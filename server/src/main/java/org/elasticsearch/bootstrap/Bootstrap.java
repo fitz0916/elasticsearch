@@ -347,6 +347,7 @@ final class Bootstrap {
         INSTANCE = new Bootstrap();
 
         final SecureSettings keystore = loadSecureSettings(initialEnv);
+        //初始化环境
         final Environment environment = createEnvironment(pidFile, keystore, initialEnv.settings(), initialEnv.configFile());
 
         LogConfigurator.setNodeName(Node.NODE_NAME_SETTING.get(environment.settings()));
@@ -355,6 +356,7 @@ final class Bootstrap {
         } catch (IOException e) {
             throw new BootstrapException(e);
         }
+        //检查java版本
         if (JavaVersion.current().compareTo(JavaVersion.parse("11")) < 0) {
             final String message = String.format(
                             Locale.ROOT,
@@ -370,7 +372,7 @@ final class Bootstrap {
                 throw new BootstrapException(e);
             }
         }
-
+        //
         final boolean closeStandardStreams = (foreground == false) || quiet;
         try {
             if (closeStandardStreams) {
@@ -383,13 +385,14 @@ final class Bootstrap {
             }
 
             // fail if somebody replaced the lucene jars
+            //检查lucene的jar
             checkLucene();
 
             // install the default uncaught exception handler; must be done before security is
             // initialized as we do not want to grant the runtime permission
             // setDefaultUncaughtExceptionHandler
             Thread.setDefaultUncaughtExceptionHandler(new ElasticsearchUncaughtExceptionHandler());
-
+            //设置环境信息
             INSTANCE.setup(true, environment);
 
             try {
@@ -398,7 +401,7 @@ final class Bootstrap {
             } catch (IOException e) {
                 throw new BootstrapException(e);
             }
-
+            //启动
             INSTANCE.start();
 
             // We don't close stderr if `--quiet` is passed, because that
